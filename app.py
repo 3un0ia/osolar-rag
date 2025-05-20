@@ -1,0 +1,15 @@
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+from flask import Flask
+from api.routes import bp as api_bp
+
+def create_app():
+    app = Flask(__name__)
+    app.config.from_pyfile("config.py")
+    app.config["JSON_AS_ASCII"] = False
+    app.register_blueprint(api_bp, url_prefix="/api")
+    return app
+
+if __name__ == "__main__":
+    # 개발용 실행
+    create_app().run(host="0.0.0.0", port=8080, debug=True)
