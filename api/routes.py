@@ -11,36 +11,43 @@ bp = Blueprint("api", __name__)
 
 @bp.route("/query", methods=["POST"])
 def query():
-    data = request.get_json()
+    body = request.get_json()
+    errors = []
 
-    question = data.get("question","")
-    top_k = data.get("top_k", 5)
-    skip_llm = data.get("skip_llm", False)
+    if body is None:
+        errors.append({
+            "loc": ["body"],
+            "msg": "Invalid or missing JSON body",
+            "type": "value_error.json"
+        })
+        return jsonify(detail=errors), 422
+    
+    question = body.get("question","")
+    user_info = body.get("user")
+    history = body.get("history", [])
 
-    # 1) 검색
-    answer, docs = run_qa(question)
-    # # 2) 프롬프트
-    # context = "\n\n".join(doc.page_content for doc, _ in docs_scores)
-    # prompt  = template.format(
-    #             context=context, 
-    #             question=question, 
-    #             user_profile=user_profile
-    #     )
-    # 3) LLM 호출
-    if skip_llm:
-        answer = None
+    if not question or not isinstance(question, str):
+        errors.append({
+            "loc": ["body", "question"],
+            "msg": "Field required and must be a non-empty string",
+            "type": "value_error.missing"
+        })
+    if history is None or not isinstance(history, list):
+        errors.append({
+            "loc": ["body", "history"],
+            "msg": "If provided, history must be a list of strings",
+            "type": "type_error.list"
+        })
 
-    # 4) 결과 반환
+    if errors:
+        return jsonify(detail=errors), 422
+
+    answer, summary = run_qa(question, user_info, history)
+    
     return jsonify({
         "answer": answer,
-        "documents": [
-            {
-                "id": d.metadata.get("id"), 
-                "score": getattr(d, "score", None)
-            }
-            for d in docs
-        ]
-    })
+        "summary": summary
+    }), 200
 
 @bp.route("/search_docs", methods=["POST"])
 def search_docs():
