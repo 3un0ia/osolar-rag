@@ -38,7 +38,7 @@ def run_qa(
     answer_prompt = build_answer_prompt(question, user_info, history, context)
     answer = generate_response(answer_prompt)
 
-    summary_prompt = build_summary_prompt(question, user_info, history)
+    summary_prompt = build_summary_prompt(answer)
     summary = generate_response(summary_prompt)
     
     return answer, summary
@@ -47,36 +47,30 @@ def build_answer_prompt(
     question: str,
     user: Dict,
     history: List[str],
-    contexts: List[str],
+    context: str,
 ) -> str:
     hist_text = "\n".join(f"- {turn}" for turn in history)
-    user_text = (
-        f"사용자: {user.get('representativeName')} 님\n"
-        f"발전소: {user.get('plantName')} (사업자번호 {user.get('businessNumber')})"
-    )
-    ctx_text = "\n\n".join(
-        f"[문서 {i+1}]\n{ctx}" for i, ctx in enumerate(contexts)
-    )
+    user_text = json.dumps(user, ensure_ascii=False, indent=2)
+    ctx_text = context
 
     return (
+        f"== 사용자 정보 ==\n"
         f"{user_text}\n\n"
-        f"대화 히스토리:\n{hist_text or '- 없음 -'}\n\n"
-        f"관련 문서 조각 (contexts):\n{ctx_text}\n\n"
-        f"질문: {question}\n\n"
+        f"== 이전 대화 이력 ==\n"
+        f"{hist_text}\n\n"
+        f"== 관련 문서 컨텍스트 ==\n"
+        f"{ctx_text}\n\n"
+        f"== 현재 질문 ==\n"
+        f"{question}\n\n"
         "위 정보를 종합하여, 정확하고 친절한 답변을 작성해 주세요."
     )
 
 
 def build_summary_prompt(
-    question: str,
-    user: Dict,
-    history: List[str],
+    answer: str
 ) -> str:
-    hist_text = "\n".join(f"- {turn}" for turn in history)
     return (
-        "아래 사용자 정보와 대화 히스토리를 간략히 요약해 주세요.\n\n"
-        f"사용자: {user.get('representativeName')} 님, 발전소: {user.get('plantName')}\n\n"
-        f"대화 히스토리:\n{hist_text or '- 없음 -'}\n\n"
-        f"요청 질문: {question}\n\n"
+        "아래 응답을 한 문장으로 요약해 주세요:\n\n"
+        f"{answer}\n\n"
         "요약:"
     )
