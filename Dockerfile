@@ -7,4 +7,4 @@ RUN pip install --upgrade pip \
 
 COPY . .
 
-CMD ["osolar_rag.main.handler"]
+CMD ["app.lambda_handler"]

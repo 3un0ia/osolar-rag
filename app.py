@@ -1,6 +1,7 @@
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 from flask import Flask
+import awsgi
 from api.routes import bp as api_bp
 
 def create_app():
@@ -9,6 +10,10 @@ def create_app():
     app.config["JSON_AS_ASCII"] = False
     app.register_blueprint(api_bp, url_prefix="/api")
     return app
+
+def lambda_handler(event, context):
+    app = create_app()
+    return awsgi.response(app, event, context)
 
 if __name__ == "__main__":
     # 개발용 실행
