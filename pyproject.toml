@@ -1,0 +1,24 @@
+[project]
+name = "osolar-rag"
+version = "0.1.0"
+description = "osolar ai agent: ai server"
+authors = [
+    {name = "Sohyeon Hong (3un0ia)"}
+]
+readme = "README.md"
+requires-python = ">=3.11,<4.0"
+dependencies = [
+    "flask (>=3.1.1,<4.0.0)",
+    "boto3 (>=1.38.30,<2.0.0)",
+    "langchain (>=0.3.25,<0.4.0)",
+    "langchain-community (==0.3.24)",
+    "tiktoken (==0.9.0)",
+    "langchain-huggingface (>=0.2.0,<0.3.0)",
+    "langchain-chroma (>=0.2.4,<0.3.0)",
+    "pypdf (>=5.6.0,<6.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

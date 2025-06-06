@@ -1,7 +1,7 @@
 import json
 from flask import Response
 from flask import Blueprint, request, jsonify
-from services.qa_chain import run_qa, vectordb, template
+from services.qa_chain import run_qa, vectordb, build_answer_prompt
 from services.llm_client import generate_response
 import services.backend_client as backend_client
 import re
@@ -86,17 +86,15 @@ def prompt():
     docs         = data.get("documents", [])
     question     = data.get("question", "")
     user_profile = data.get("user_profile", {})
+    history      = data.get("history", [])
 
     # Context 조립: front-end에서 보내준 docs 리스트를 그대로 사용
     context = "\n\n".join(d.get("page_content", "") for d in docs)
 
     # LangChain PromptTemplate 에 입력 변수로 넘겨서 문자열 생성
-    prompt_str = template.format(
-        context=context,
-        question=question,
-        user_profile=user_profile
-    )
-    return jsonify({"prompt": prompt_str})
+    answer_prompt = build_answer_prompt(question, user_profile, history, context)
+    # answer = generate_response(answer_prompt)
+    return jsonify({"prompt": answer_prompt})
 
 
 @bp.route("/llm", methods=["POST"])
