@@ -1,16 +1,15 @@
 import json
-from flask import Response
+from flask import Response, stream_with_context
 from flask import Blueprint, request, jsonify
-from services.qa_chain import run_qa, vectordb, build_answer_prompt
+from services.qa_chain import run_qa, run_qa_stream, vectordb, build_answer_prompt
 from services.llm_client import generate_response
-import services.backend_client as backend_client
 import re
 CONTROL_CHAR_RE = re.compile(r'[\x00-\x1F]+')
 
 bp = Blueprint("api", __name__)
 
 @bp.route("/query", methods=["POST"])
-def query():
+def query_stream():
     body = request.get_json()
     errors = []
 
@@ -23,10 +22,10 @@ def query():
         return jsonify(detail=errors), 422
     
     question = body.get("question","")
-    user_info = body.get("user")
+    user_info = body.get("user", {})
     history = body.get("history", [])
 
-    if not question or not isinstance(question, str):
+    if not question :
         errors.append({
             "loc": ["body", "question"],
             "msg": "Field required and must be a non-empty string",
@@ -41,13 +40,16 @@ def query():
 
     if errors:
         return jsonify(detail=errors), 422
-
-    answer, summary = run_qa(question, user_info, history)
     
-    return jsonify({
-        "answer": answer,
-        "summary": summary
-    }), 200
+    generator = run_qa_stream(question, user_info, history)
+    def event_stream():
+        for chunk in generator:
+            yield f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n"
+
+    return Response(
+        stream_with_context(event_stream()),
+        mimetype="text/event-stream; charset=utf-8"
+        )
 
 @bp.route("/search_docs", methods=["POST"])
 def search_docs():
@@ -67,7 +69,7 @@ def search_docs():
         text = CONTROL_CHAR_RE.sub('', doc.page_content)
         out.append({
             "id":           doc.metadata.get("id"),
-            "score":        score,
+            "score":        float(score),
             "metadata":     doc.metadata,
             "page_content": text
         })
@@ -94,18 +96,10 @@ def prompt():
     # LangChain PromptTemplate 에 입력 변수로 넘겨서 문자열 생성
     answer_prompt = build_answer_prompt(question, user_profile, history, context)
     # answer = generate_response(answer_prompt)
-    return jsonify({"prompt": answer_prompt})
-
-
-@bp.route("/llm", methods=["POST"])
-def llm_only():
-    data   = request.get_json() or {}
-    prompt = data.get("prompt", "")
-
-    # Bedrock 호출
-    try:
-        answer = generate_response(prompt)
-    except Exception as e:
-        print("🔴 LLM 호출 오류:", e)
-        return jsonify({"error": str(e)}), 400
-    return jsonify({"response": answer})
+    body = json.dumps(
+        {"prompt": answer_prompt},
+        ensure_ascii=False,
+        indent=2,
+        )
+    
+    return Response(body, content_type="application/json; charset=utf-8")

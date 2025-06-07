@@ -1,19 +1,16 @@
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_chroma import Chroma
+from langchain_community.vectorstores import FAISS
 from loaders.faq_loader    import load_faq_chunks
 from loaders.pdf_loader    import load_policy_chunks
-from config import EMBEDDING_MODEL
-
-PERSIST_DIR        = "./chroma_persist"
+from config import EMBEDDING_MODEL, PERSIST_DIR
 
 def ingest(collection_name: str, docs: list):
     embedder = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
-    vectordb = Chroma.from_documents(
+    vectordb = FAISS.from_documents(
         documents=docs,
-        embedding=embedder,
-        persist_directory=PERSIST_DIR,
-        collection_name=collection_name
+        embedding=embedder
     )
+    vectordb.save_local(PERSIST_DIR)
     
     print(f"[{collection_name}] ingested {len(docs)} docs")
 
