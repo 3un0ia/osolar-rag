@@ -1,7 +1,7 @@
 import json
 from typing import Iterator, List, Dict, Tuple
 from config import EMBEDDING_MODEL, PERSIST_DIR
-from langchain.chains import RetrievalQA
+from langchain.chains import RetrievalQA, ConversationChain
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from services.bedrock_llm import BedrockLLM
@@ -75,7 +75,10 @@ def build_answer_prompt(
     history: List[str],
     context: str,
 ) -> str:
-    hist_text = "\n".join(f"- {turn}" for turn in history)
+    if history:
+        hist_text = "\n".join(f"{i+1}. {turn}" for i, turn in enumerate(history))
+    else:
+        hist_text = "이전 대화 이력 없음"
     user_text = json.dumps(user, ensure_ascii=False, indent=2)
     ctx_text = context
 

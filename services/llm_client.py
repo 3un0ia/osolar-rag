@@ -43,7 +43,7 @@ def _invoke_bedrock(prompt: str) -> Iterator[str]:
         yield chunk
 
 
-def generate_response_stream(prompt: str) -> Iterator[str]:
+def generate_response(prompt: str) -> Iterator[str]:
     """
     스트리밍 응답을 위한 제너레이터 함수
     """
