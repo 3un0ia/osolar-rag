@@ -7,24 +7,21 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from services.bedrock_llm import BedrockLLM
 from services.llm_client import generate_response
 
-
-# 1) 임베딩 + 벡터스토어 + retriever
-embedder = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
-vectordb = FAISS.load_local(
-    PERSIST_DIR,
-    embedder,
-    allow_dangerous_deserialization=True
-)
-
-llm = BedrockLLM()
-
-# 3) RetrievalQA 체인 생성
-qa_chain = RetrievalQA.from_chain_type(
-    llm=llm,
-    chain_type="stuff",
-    retriever=vectordb.as_retriever(search_kwargs={"k": 4}),
-    return_source_documents=True,
-)
+def get_embedder():
+    embedder = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
+    vectordb = FAISS.load_local(
+        PERSIST_DIR,
+        embedder,
+        allow_dangerous_deserialization=True
+    )
+    llm = BedrockLLM()
+    qa_chain = RetrievalQA.from_chain_type(
+        llm=llm,
+        chain_type="stuff",
+        retriever=vectordb.as_retriever(search_kwargs={"k": 4}),
+        return_source_documents=True,
+    )
+    return vectordb
 
 def run_qa_stream(
         question: str,
@@ -38,6 +35,7 @@ def run_qa_stream(
     - Then chunk of the 'summary',
     - Finally a chunk labeled 'summary_complete'.
     """
+    vectordb = get_embedder()
     docs = vectordb.similarity_search(question, k=4)
     context = "\n\n".join(d.page_content for d in docs)
     

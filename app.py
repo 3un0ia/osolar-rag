@@ -1,4 +1,7 @@
 import os
+os.environ["HF_HOME"] = "/tmp/hf_home"
+os.environ["TRANSFORMERS_CACHE"] = "/tmp/hf_transformers"
+os.environ["SENTENCE_TRANSFORMERS_CACHE"] = "/tmp/st_cache"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 from flask import Flask
 import awsgi
