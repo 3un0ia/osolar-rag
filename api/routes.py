@@ -1,7 +1,7 @@
 import json
 from flask import Response, stream_with_context
 from flask import Blueprint, request, jsonify
-from services.qa_chain import run_qa, run_qa_stream, vectordb, build_answer_prompt
+from services.qa_chain import run_qa, vectordb, build_answer_prompt
 from services.llm_client import generate_response
 import re
 CONTROL_CHAR_RE = re.compile(r'[\x00-\x1F]+')
@@ -41,7 +41,7 @@ def query_stream():
     if errors:
         return jsonify(detail=errors), 422
     
-    generator = run_qa_stream(question, user_info, history)
+    generator = run_qa(question, user_info, history)
     def event_stream():
         for chunk in generator:
             yield f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n"
@@ -87,7 +87,7 @@ def prompt():
 
     docs         = data.get("documents", [])
     question     = data.get("question", "")
-    user_profile = data.get("user_profile", {})
+    user_profile = data.get("user", {})
     history      = data.get("history", [])
 
     # Context 조립: front-end에서 보내준 docs 리스트를 그대로 사용
