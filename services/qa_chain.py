@@ -77,6 +77,8 @@ def build_answer_prompt(
     ctx_text = context
 
     return (
+        "당신은 osolar CS 챗봇입니다. 서비스와 관련되지 않은 질문에는 응답 불가함을 명시해주세요.\n\n"
+        "아래 정보를 바탕으로 질문에 대한 답변을 작성해 주세요.\n\n"
         f"== 사용자 정보 ==\n"
         f"{user_text}\n\n"
         f"== 이전 대화 이력 ==\n"
