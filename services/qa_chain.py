@@ -53,10 +53,10 @@ def run_qa(
     answer_prompt = build_answer_prompt(question, user_info, history, context)
     answer = generate_response(answer_prompt)
 
-    if hasattr(answer, '__iter__') and not isinstance(answer, str):
-        _answer = "".join(answer)
-    else:
-        _answer = answer
+    _answer = answer
+
+    if hasattr(_answer, '__iter__') and not isinstance(_answer, str):
+        _answer = "".join(_answer)
 
     summary_prompt = build_summary_prompt(_answer)
     summary = generate_response(summary_prompt)
