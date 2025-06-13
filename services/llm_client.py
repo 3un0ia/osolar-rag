@@ -9,7 +9,7 @@ _bedrock = boto3.client(
     region_name=BEDROCK_REGION
 )
 
-def _invoke_bedrock(prompt: str) -> Iterator[str]:
+def _invoke_bedrock(prompt: str) -> str:
     # Claude 3.5 Sonnet용 Bedrock 호출
     _body = {
         "anthropic_version": ANTHROPIC_VERSION,
@@ -30,21 +30,20 @@ def _invoke_bedrock(prompt: str) -> Iterator[str]:
     resp = _bedrock.invoke_model(
         modelId = BEDROCK_MODEL,
         contentType = "application/json",
-        accept = "text/event-steam",
+        accept = "application/json",
+        # accept = "text/event-steam",
         body = json.dumps(_body),
-        stream=True
     )
 
-    for event in resp["body"].iter_lines():
-        if not event:
-            continue
-        data = json.loads(event.replace("data: ", ""))
-        chunk = data["choices"][0]["delta"].get("content", "")
-        yield chunk
+    # for event in resp["body"].iter_lines():
+    #     if not event:
+    #         continue
+    #     data = json.loads(event.replace("data: ", ""))
+    #     chunk = data["choices"][0]["delta"].get("content", "")
+    #     yield chunk
+    # 전체 응답을 문자열로 디코드하여 반환
+    result = json.loads(resp["body"].read())
+    return result["content"][0]["text"] if "content" in result else ""
 
-
-def generate_response(prompt: str) -> Iterator[str]:
-    """
-    스트리밍 응답을 위한 제너레이터 함수
-    """
+def generate_response(prompt: str) -> str:
     yield from _invoke_bedrock(prompt)
