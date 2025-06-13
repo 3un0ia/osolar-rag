@@ -48,8 +48,8 @@ def query_stream():
 
     answer, summary = run_qa(question, user_info, history)
     
-    if hasattr(answer, '__iter__') and not isinstance(answer, str):
-        answer = "".join(answer)
+    # if hasattr(answer, '__iter__') and not isinstance(answer, str):
+    #     answer = "".join(answer)
     if hasattr(summary, '__iter__') and not isinstance(summary, str):
         summary = "".join(summary)
     
