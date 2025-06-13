@@ -53,10 +53,10 @@ def run_qa(
     answer_prompt = build_answer_prompt(question, user_info, history, context)
     answer = generate_response(answer_prompt)
 
-    _answer = answer
-
-    if hasattr(_answer, '__iter__') and not isinstance(_answer, str):
-        _answer = "".join(_answer)
+    if isinstance(answer, (list, Iterator)):
+        answer = "".join(str(chunk) for chunk in answer)
+    elif isinstance(answer, dict):
+        answer = json.dumps(answer, ensure_ascii=False)
 
     summary_prompt = build_summary_prompt(_answer)
     summary = generate_response(summary_prompt)
