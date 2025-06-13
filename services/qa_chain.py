@@ -58,7 +58,7 @@ def run_qa(
     elif isinstance(answer, dict):
         answer = json.dumps(answer, ensure_ascii=False)
 
-    summary_prompt = build_summary_prompt(_answer)
+    summary_prompt = build_summary_prompt(answer)
     summary = generate_response(summary_prompt)
     
     return answer, summary
