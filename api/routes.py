@@ -41,15 +41,23 @@ def query_stream():
     if errors:
         return jsonify(detail=errors), 422
     
-    generator = run_qa(question, user_info, history)
-    def event_stream():
-        for chunk in generator:
-            yield f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n"
+    # generator = run_qa(question, user_info, history)
+    # def event_stream():
+    #     for chunk in generator:
+    #         yield f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n"
 
-    return Response(
-        stream_with_context(event_stream()),
-        mimetype="text/event-stream; charset=utf-8"
-        )
+    answer, summary = run_qa(question, user_info, history)
+    body = json.dumps({
+        "answer": answer,
+        "summary": summary
+    }, ensure_ascii=False)
+
+    return Response(body, content_type="application/json; charset=utf-8")
+
+    # return Response(
+    #     stream_with_context(event_stream()),
+    #     mimetype="text/event-stream; charset=utf-8"
+    #     )
 
 @bp.route("/search_docs", methods=["POST"])
 def search_docs():

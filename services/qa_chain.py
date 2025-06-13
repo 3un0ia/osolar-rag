@@ -22,23 +22,22 @@ qa_chain = RetrievalQA.from_chain_type(
 )
 
 
-def run_qa_stream(
-        question: str,
-        user_info: Dict,
-        history: List[str]
-    ) -> Iterator[Dict[str, str]]:
+# def run_qa_stream(
+#         question: str,
+#         user_info: Dict,
+#         history: List[str]
+#     ) -> Iterator[Dict[str, str]]:
     
-    docs = vectordb.similarity_search(question, k=4)
-    context = "\n\n".join(d.page_content for d in docs)
+#     docs = vectordb.similarity_search(question, k=4)
+#     context = "\n\n".join(d.page_content for d in docs)
     
-    answer_prompt = build_answer_prompt(question, user_info, history, context)
-    for chunk in generate_response(answer_prompt):
-        yield {"type": "answer", "text": chunk}
+#     answer_prompt = build_answer_prompt(question, user_info, history, context)
+#     for chunk in generate_response(answer_prompt):
+#         yield {"type": "answer", "text": chunk}
     
-    summary_prompt = build_summary_prompt(answer_prompt)
-    for chunk in generate_response(summary_prompt):
-        yield {"type": "summary", "text": chunk}
-
+#     summary_prompt = build_summary_prompt(answer_prompt)
+#     for chunk in generate_response(summary_prompt):
+#         yield {"type": "summary", "text": chunk}
 
 
 def run_qa(
