@@ -47,6 +47,12 @@ def query_stream():
     #         yield f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n"
 
     answer, summary = run_qa(question, user_info, history)
+    
+    if hasattr(answer, '__iter__') and not isinstance(answer, str):
+        answer = "".join(answer)
+    if hasattr(summary, '__iter__') and not isinstance(summary, str):
+        summary = "".join(summary)
+    
     body = json.dumps({
         "answer": answer,
         "summary": summary
