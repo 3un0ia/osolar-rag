@@ -1,4 +1,4 @@
-# Osola AI 서비스
+# Osolar AI CS ChatBot
 
 ## 📖 프로젝트 개요
 
@@ -83,6 +83,6 @@
 
 MIT License
 
-> **Tip:**
+> **Warning:**
 > 실제 배포 전이나 aws access key 없이, Local server에서는 LLM 호출이 불가하며, EC2와 같은 AWS 서버 위에서는 동작 가능합니다.
 > 또한 aws region이나 model에 대한 환경변수에 주의해 주세요.
